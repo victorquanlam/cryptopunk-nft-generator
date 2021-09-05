@@ -20,10 +20,12 @@ const ctx = canvas.getContext("2d");
 
 const priorities = ['punks','top','beard'];
 
-const generateImages = async () => {
+const main = async () => {
   const traitTypesDir = dir.traitTypes;
+  // register all the traits 
   const types = fs.readdirSync(traitTypesDir);
 
+  // set all priotized layers to be drawn first. for eg: punk type, top... You can set these values in the priorities array in line 21
   const traitTypes = priorities.concat(types.filter(x=> !priorities.includes(x)))
                       .map(traitType => (
                         fs.readdirSync(`${traitTypesDir}/${traitType}/`)
@@ -52,7 +54,6 @@ const recreateOutputsDir = () => {
   fs.mkdirSync(`${dir.outputs}/punks`);
 };
 
-// https://stackoverflow.com/a/66888968
 const allPossibleCases = (arraysToCombine) => {
   const divisors = [];
   let permsCount = 1;
@@ -114,5 +115,5 @@ const drawImage= async (traitTypes, background, index) => {
 //main
 (() => {
   recreateOutputsDir();
-  generateImages();
+  main();
 })();

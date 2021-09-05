@@ -7,13 +7,21 @@ const imageFormat = {
     height: 24
 };
 
+const dir = {
+  traitTypes : `./layers/trait_types`,
+  outputs: `./outputs`,
+  background: `./layers/background`,
+}
+
+let totalOutputs = 0;
+
 const canvas = createCanvas(imageFormat.width, imageFormat.height);
 const ctx = canvas.getContext("2d");
 
 const priorities = ['punks','top','beard'];
 
 const generateImages = async () => {
-  const traitTypesDir = `./layers/trait_types`
+  const traitTypesDir = dir.traitTypes;
   const types = fs.readdirSync(traitTypesDir);
 
   const traitTypes = priorities.concat(types.filter(x=> !priorities.includes(x)))
@@ -24,7 +32,7 @@ const generateImages = async () => {
                         }).concat({trait_type: traitType, value: 'N/A'})
                       ));
 
-  const backgrounds = fs.readdirSync(`./layers/background`);
+  const backgrounds = fs.readdirSync(dir.background);
 
   // trait type avail for each punk
   const combinations = allPossibleCases(traitTypes)
@@ -36,13 +44,12 @@ const generateImages = async () => {
 };
 
 const recreateOutputsDir = () => {
-  const dir = `./outputs`;
-  if (fs.existsSync(dir)) {
-    fs.rmdirSync(dir, { recursive: true });
+  if (fs.existsSync(dir.outputs)) {
+    fs.rmdirSync(dir.outputs, { recursive: true });
   }
-  fs.mkdirSync(dir);
-  fs.mkdirSync(`${dir}/metadata`);
-  fs.mkdirSync(`${dir}/punks`);
+  fs.mkdirSync(dir.outputs);
+  fs.mkdirSync(`${dir.outputs}/metadata`);
+  fs.mkdirSync(`${dir.outputs}/punks`);
 };
 
 // https://stackoverflow.com/a/66888968
@@ -54,7 +61,8 @@ const allPossibleCases = (arraysToCombine) => {
       permsCount *= (arraysToCombine[i].length || 1);
   }
 
-  console.log(permsCount)
+  totalOutputs = permsCount;
+
   const getCombination = (n, arrays, divisors) => arrays.reduce((acc, arr, i) => {
       acc.push(arr[Math.floor(n / divisors[i]) % arr.length]);
       return acc;
@@ -62,15 +70,15 @@ const allPossibleCases = (arraysToCombine) => {
 
   const combinations = [];
   for (let i = 0; i < permsCount; i++) {
-    // console.log("done " + i)
       combinations.push(getCombination(i, arraysToCombine, divisors));
   }
+
   return combinations;
 };
 
 const drawImage= async (traitTypes, background, index) => {
   // draw background
-  const backgroundIm = await loadImage(`./layers/background/${background}`);
+  const backgroundIm = await loadImage(`${dir.background}/${background}`);
   
   ctx.drawImage(backgroundIm,0,0,imageFormat.width,imageFormat.height);
 
@@ -78,16 +86,15 @@ const drawImage= async (traitTypes, background, index) => {
   const drawableTraits = traitTypes.filter(x=> x.value !== 'N/A')
   for (let index = 0; index < drawableTraits.length; index++) {
       const val = drawableTraits[index];
-      const image = await loadImage(`./layers/trait_types/${val.trait_type}/${val.value}`);
+      const image = await loadImage(`${dir.traitTypes}/${val.trait_type}/${val.value}`);
       ctx.drawImage(image,0,0,imageFormat.width,imageFormat.height);
   }
 
-  // up to here
-  console.log(`up to here ${index}`)
+  console.log(`Progress: ${index}/ ${totalOutputs}`)
 
   // save metadata
   fs.writeFileSync(
-    `./outputs/metadata/${index}.json`,
+    `${dir.outputs}/metadata/${index}.json`,
     JSON.stringify({
       name: `punk ${index}`,
       attributes: drawableTraits
@@ -99,7 +106,7 @@ const drawImage= async (traitTypes, background, index) => {
 
   // save image 
   fs.writeFileSync(
-    `./outputs/punks/${index}.png`, 
+    `${dir.outputs}/punks/${index}.png`, 
     canvas.toBuffer("image/png")
   );
 }

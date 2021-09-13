@@ -11,3 +11,6 @@ How to generate 800,000 crypto punks using javascript
 
 ````node index.js ````
 
+## limit outputs eg: 100 images
+
+````node index.js 100````

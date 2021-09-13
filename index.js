@@ -20,7 +20,7 @@ const ctx = canvas.getContext("2d");
 
 const priorities = ['punks','top','beard'];
 
-const main = async () => {
+const main = async (numberOfOutputs) => {
   const traitTypesDir = dir.traitTypes;
   // register all the traits 
   const types = fs.readdirSync(traitTypesDir);
@@ -37,7 +37,7 @@ const main = async () => {
   const backgrounds = fs.readdirSync(dir.background);
 
   // trait type avail for each punk
-  const combinations = allPossibleCases(traitTypes)
+  const combinations = allPossibleCases(traitTypes,numberOfOutputs)
   
     for (var n = 0; n < combinations.length; n++) {
       const randomBackground = backgrounds[Math.floor(Math.random() * backgrounds.length)]
@@ -54,15 +54,23 @@ const recreateOutputsDir = () => {
   fs.mkdirSync(`${dir.outputs}/punks`);
 };
 
-const allPossibleCases = (arraysToCombine) => {
+const allPossibleCases = (arraysToCombine, max) => {
   const divisors = [];
   let permsCount = 1;
+
   for (let i = arraysToCombine.length - 1; i >= 0; i--) {
-      divisors[i] = divisors[i + 1] ? divisors[i + 1] * arraysToCombine[i + 1].length : 1;
-      permsCount *= (arraysToCombine[i].length || 1);
+    divisors[i] = divisors[i + 1] ? divisors[i + 1] * arraysToCombine[i + 1].length : 1;
+    permsCount *= (arraysToCombine[i].length || 1);
+  }
+
+
+  if(!!max && max>0) {
+    console.log(max);
+    permsCount = max;
   }
 
   totalOutputs = permsCount;
+
 
   const getCombination = (n, arrays, divisors) => arrays.reduce((acc, arr, i) => {
       acc.push(arr[Math.floor(n / divisors[i]) % arr.length]);
@@ -75,7 +83,10 @@ const allPossibleCases = (arraysToCombine) => {
   }
 
   return combinations;
+
+  return [];
 };
+
 
 const drawImage= async (traitTypes, background, index) => {
   // draw background
@@ -91,11 +102,11 @@ const drawImage= async (traitTypes, background, index) => {
       ctx.drawImage(image,0,0,imageFormat.width,imageFormat.height);
   }
 
-  console.log(`Progress: ${index}/ ${totalOutputs}`)
+  console.log(`Progress: ${index+1}/ ${totalOutputs}`)
 
   // save metadata
   fs.writeFileSync(
-    `${dir.outputs}/metadata/${index}.json`,
+    `${dir.outputs}/metadata/${index+1}.json`,
     JSON.stringify({
       name: `punk ${index}`,
       attributes: drawableTraits
@@ -107,7 +118,7 @@ const drawImage= async (traitTypes, background, index) => {
 
   // save image 
   fs.writeFileSync(
-    `${dir.outputs}/punks/${index}.png`, 
+    `${dir.outputs}/punks/${index+1}.png`, 
     canvas.toBuffer("image/png")
   );
 }
@@ -115,5 +126,6 @@ const drawImage= async (traitTypes, background, index) => {
 //main
 (() => {
   recreateOutputsDir();
-  main();
+
+  main(process.argv[2]);
 })();

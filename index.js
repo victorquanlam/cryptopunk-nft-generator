@@ -34,10 +34,12 @@ const main = async (numberOfOutputs) => {
                         }).concat({trait_type: traitType, value: 'N/A'})
                       ));
 
+  //console.log(traitTypes)
   const backgrounds = fs.readdirSync(dir.background);
 
   // trait type avail for each punk
   const combinations = allPossibleCases(traitTypes,numberOfOutputs)
+  //console.log(combinations)
   
     for (var n = 0; n < combinations.length; n++) {
       const randomBackground = backgrounds[Math.floor(Math.random() * backgrounds.length)]
@@ -104,13 +106,24 @@ const drawImage= async (traitTypes, background, index) => {
 
   console.log(`Progress: ${index+1}/ ${totalOutputs}`)
 
+  //deep copy
+  let metaDrawableTraits = JSON.parse(JSON.stringify(drawableTraits))
+
+  //remove .png from attributes
+  metaDrawableTraits.map(x => {
+    x.value = x.value.substring(0,x.value.length-4)
+    return x
+  })
+
   // save metadata
   fs.writeFileSync(
     `${dir.outputs}/metadata/${index+1}.json`,
     JSON.stringify({
       name: `punk ${index}`,
-      attributes: drawableTraits
-    }),
+      description: 'generative Art NFT',
+      image: `ipfs://NewUriToReplace/${index}.png`,
+      attributes: metaDrawableTraits
+    }, null, 2),
     function(err){
       if(err) throw err;
     }

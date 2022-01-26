@@ -104,13 +104,24 @@ const drawImage= async (traitTypes, background, index) => {
 
   console.log(`Progress: ${index+1}/ ${totalOutputs}`)
 
+  //deep copy
+  let metaDrawableTraits = JSON.parse(JSON.stringify(drawableTraits))
+
+  //remove .png from attributes
+  metaDrawableTraits.map(x => {
+    x.value = x.value.substring(0,x.value.length-4)
+    return x
+  })
+
   // save metadata
   fs.writeFileSync(
     `${dir.outputs}/metadata/${index+1}.json`,
     JSON.stringify({
       name: `punk ${index}`,
-      attributes: drawableTraits
-    }),
+      description: 'generative Art NFT',
+      image: `ipfs://NewUriToReplace/${index}.png`,
+      attributes: metaDrawableTraits
+    }, null, 2),
     function(err){
       if(err) throw err;
     }

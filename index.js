@@ -34,12 +34,10 @@ const main = async (numberOfOutputs) => {
                         }).concat({trait_type: traitType, value: 'N/A'})
                       ));
 
-  //console.log(traitTypes)
   const backgrounds = fs.readdirSync(dir.background);
 
   // trait type avail for each punk
   const combinations = allPossibleCases(traitTypes,numberOfOutputs)
-  //console.log(combinations)
   
     for (var n = 0; n < combinations.length; n++) {
       const randomBackground = backgrounds[Math.floor(Math.random() * backgrounds.length)]

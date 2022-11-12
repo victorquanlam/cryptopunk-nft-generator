@@ -14,3 +14,11 @@ This is a console app to generate 800,000 crypto punks using javascript
 ## limit outputs eg: 100 images
 
 ````node index.js 100````
+
+## Troubleshot
+
+If you have 'npm error' when you install canvas package on MAC OS, try this cmd:
+```
+brew install pkg-config cairo pango libpng jpeg giflib librsvg pixman
+``` 
+More informations [here](https://github.com/Automattic/node-canvas)
